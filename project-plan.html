@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 漏洞扫描平台 — 五阶段开发规划与 AI 提示词设计</title>
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d27;
+            --bg-card: #1e2230;
+            --bg-hover: #252a3a;
+            --text-primary: #e4e6eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --border-color: #2d3142;
+            --border-light: #373b4d;
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* === HERO === */
+        .hero {
+            position: relative;
+            padding: 80px 24px 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #1e2230 100%);
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-30px, 30px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--accent-blue);
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .hero-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #e4e6eb 0%, #9ca3af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .hero-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tech-chip {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tech-chip:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        /* === CONTAINER === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* === SECTION === */
+        section {
+            padding: 60px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* === PHASE TIMELINE === */
+        .timeline {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 60px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink), var(--accent-orange), var(--accent-green));
+            opacity: 0.3;
+        }
+
+        .phase-node {
+            text-align: center;
+            position: relative;
+        }
+
+        .phase-node .circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 auto 16px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .phase-node:nth-child(1) .circle { background: rgba(59, 130, 246, 0.15); border: 2px solid var(--accent-blue); color: var(--accent-blue); }
+        .phase-node:nth-child(2) .circle { background: rgba(139, 92, 246, 0.15); border: 2px solid var(--accent-purple); color: var(--accent-purple); }
+        .phase-node:nth-child(3) .circle { background: rgba(236, 72, 153, 0.15); border: 2px solid var(--accent-pink); color: var(--accent-pink); }
+        .phase-node:nth-child(4) .circle { background: rgba(245, 158, 11, 0.15); border: 2px solid var(--accent-orange); color: var(--accent-orange); }
+        .phase-node:nth-child(5) .circle { background: rgba(16, 185, 129, 0.15); border: 2px solid var(--accent-green); color: var(--accent-green); }
+
+        .phase-node .circle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .phase-node .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .phase-node .sublabel {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* === PHASE CARDS === */
+        .phase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .phase-card[data-phase="1"]::before { background: var(--accent-blue); }
+        .phase-card[data-phase="2"]::before { background: var(--accent-purple); }
+        .phase-card[data-phase="3"]::before { background: var(--accent-pink); }
+        .phase-card[data-phase="4"]::before { background: var(--accent-orange); }
+        .phase-card[data-phase="5"]::before { background: var(--accent-green); }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .phase-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .phase-card[data-phase="1"] .phase-number { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .phase-card[data-phase="2"] .phase-number { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+        .phase-card[data-phase="3"] .phase-number { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
+        .phase-card[data-phase="4"] .phase-number { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .phase-card[data-phase="5"] .phase-number { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+
+        .phase-title h3 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .phase-title .role {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .phase-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .phase-section:hover {
+            border-color: var(--border-light);
+        }
+
+        .phase-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-section h4 .icon {
+            font-size: 16px;
+        }
+
+        .phase-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .phase-section li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .phase-section li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .phase-section li code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-blue);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .deliverables {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .deliverables h4 {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            color: var(--accent-green);
+        }
+
+        .deliverables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .deliverable-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+        }
+
+        .deliverable-item .check {
+            color: var(--accent-green);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .prompt-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .prompt-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* === ARCHITECTURE DIAGRAM === */
+        .arch-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        .arch-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .arch-layer {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .arch-box {
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            text-align: center;
+            min-width: 140px;
+            transition: all 0.2s;
+        }
+
+        .arch-box:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+        }
+
+        .arch-box .title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .arch-box .desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .arch-box.frontend { border-color: rgba(245, 158, 11, 0.3); }
+        .arch-box.frontend .title { color: var(--accent-orange); }
+        .arch-box.api { border-color: rgba(139, 92, 246, 0.3); }
+        .arch-box.api .title { color: var(--accent-purple); }
+        .arch-box.engine { border-color: rgba(236, 72, 153, 0.3); }
+        .arch-box.engine .title { color: var(--accent-pink); }
+        .arch-box.data { border-color: rgba(16, 185, 129, 0.3); }
+        .arch-box.data .title { color: var(--accent-green); }
+        .arch-box.infra { border-color: rgba(6, 182, 212, 0.3); }
+        .arch-box.infra .title { color: var(--accent-cyan); }
+
+        .arch-arrow {
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+
+        .arch-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        /* === STATS === */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat-card:nth-child(1) .number { color: var(--accent-blue); }
+        .stat-card:nth-child(2) .number { color: var(--accent-purple); }
+        .stat-card:nth-child(3) .number { color: var(--accent-pink); }
+        .stat-card:nth-child(4) .number { color: var(--accent-green); }
+
+        /* === FOOTER === */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 28px; }
+            .hero .subtitle { font-size: 15px; }
+            .timeline {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .timeline::before { display: none; }
+            .phase-grid {
+                grid-template-columns: 1fr;
+            }
+            .phase-card {
+                padding: 20px;
+            }
+            .section-header h2 { font-size: 24px; }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero { padding: 48px 16px 40px; }
+            .hero h1 { font-size: 22px; }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            生产级企业安全平台 · 五阶段开发规划
+        </div>
+        <h1>Web 漏洞扫描平台<br>开发规划与 AI 提示词设计</h1>
+        <p class="subtitle">Rust + React 技术栈 · 微模块化架构 · 高并发扫描引擎 · 插件化检测系统</p>
+        <div class="hero-tech-stack">
+            <span class="tech-chip">Rust 1.75+</span>
+            <span class="tech-chip">Axum 0.7+</span>
+            <span class="tech-chip">tokio</span>
+            <span class="tech-chip">SQLx</span>
+            <span class="tech-chip">React 18</span>
+            <span class="tech-chip">TypeScript 5+</span>
+            <span class="tech-chip">Ant Design 5</span>
+            <span class="tech-chip">PostgreSQL 15</span>
+            <span class="tech-chip">Redis 7</span>
+            <span class="tech-chip">Docker</span>
+            <span class="tech-chip">Prometheus</span>
+        </div>
+    </div>
+</div>
+
+<!-- ARCHITECTURE OVERVIEW -->
+<section>
+    <div class="container">
+        <div class="section-header">
+            <h2>系统架构总览</h2>
+            <p>微模块化设计 · 各模块通过 Redis 消息队列解耦 · 支持水平扩展</p>
+        </div>
+        <div class="arch-diagram">
+            <div class="arch-flow">
+                <div>
+                    <div class="arch-label">前端展示层</div>
+                    <div class="arch-layer">
+                        <div class="arch-box frontend">
+                            <div class="title">React 18 + TS</div>
+                            <div class="desc">Ant Design · Vite</div>
+                        </div>
+                        <div class="arch-box frontend">
+                            <div class="title">Dashboard</div>
+                            <div class="desc">ECharts 可视化</div>
+                        </div>
+                        <div class="arch-box frontend">
+                            <div class="title">SSE 实时推送</div>
+                            <div class="desc">任务进度监控</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-arrow">▼ HTTPS / SSE</div>
+                <div>
+                    <div class="arch-label">Web API 服务层</div>
+                    <div class="arch-layer">
+                        <div class="arch-box api">
+                            <div class="title">Axum REST API</div>
+                            <div class="desc">OpenAPI 3.0</div>
+                        </div>
+                        <div class="arch-box api">
+                            <div class="title">JWT + RBAC</div>
+                            <div class="desc">认证 · 授权 · 限流</div>
+                        </div>
+                        <div class="arch-box api">
+                            <div class="title">Middleware</div>
+                            <div class="desc">错误处理 · 审计</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-arrow">▼ Redis Pub/Sub</div>
+                <div>
+                    <div class="arch-label">扫描引擎层（独立 Worker 进程）</div>
+                    <div class="arch-layer">
+                        <div class="arch-box engine">
+                            <div class="title">ScannerEngine</div>
+                            <div class="desc">tokio · Semaphore</div>
+                        </div>
+                        <div class="arch-box engine">
+                            <div class="title">Detectors</div>
+                            <div class="desc">SQLi · XSS · 敏感文件</div>
+                        </div>
+                        <div class="arch-box engine">
+                            <div class="title">Plugin System</div>
+                            <div class="desc">YAML 规则 · 热加载</div>
+                        </div>
+                        <div class="arch-box engine">
+                            <div class="title">ResultCollector</div>
+                            <div class="desc">CVSS 3.1 · 去重</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-arrow">▼</div>
+                <div>
+                    <div class="arch-label">数据与基础设施层</div>
+                    <div class="arch-layer">
+                        <div class="arch-box data">
+                            <div class="title">PostgreSQL 15</div>
+                            <div class="desc">结构化数据存储</div>
+                        </div>
+                        <div class="arch-box data">
+                            <div class="title">Redis 7</div>
+                            <div class="desc">缓存 · 消息队列</div>
+                        </div>
+                        <div class="arch-box infra">
+                            <div class="title">Prometheus</div>
+                            <div class="desc">指标 · 监控</div>
+                        </div>
+                        <div class="arch-box infra">
+                            <div class="title">Docker</div>
+                            <div class="desc">容器化部署</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section style="padding-top: 0;">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">5</div>
+                <div class="label">开发阶段</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">6</div>
+                <div class="label">Rust Crates</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">5</div>
+                <div class="label">前端页面模块</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">4+</div>
+                <div class="label">漏洞检测器插件</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PHASE TIMELINE -->
+<section style="padding-top: 0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>五阶段开发路线</h2>
+            <p>每个阶段配有生产级 AI 提示词，包含角色定义、技术约束、功能清单、代码规范、输出格式五大核心组成部分</p>
+        </div>
+        <div class="timeline">
+            <div class="phase-node">
+                <div class="circle">1</div>
+                <div class="label">架构设计</div>
+                <div class="sublabel">Foundation</div>
+            </div>
+            <div class="phase-node">
+                <div class="circle">2</div>
+                <div class="label">后端 API</div>
+                <div class="sublabel">Backend</div>
+            </div>
+            <div class="phase-node">
+                <div class="circle">3</div>
+                <div class="label">扫描引擎</div>
+                <div class="sublabel">Engine</div>
+            </div>
+            <div class="phase-node">
+                <div class="circle">4</div>
+                <div class="label">前端界面</div>
+                <div class="sublabel">Frontend</div>
+            </div>
+            <div class="phase-node">
+                <div class="circle">5</div>
+                <div class="label">联调优化</div>
+                <div class="sublabel">Optimization</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PHASE DETAILS -->
+<section style="padding-top: 0;">
+    <div class="container">
+
+        <!-- PHASE 1 -->
+        <div class="phase-card" data-phase="1">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div class="phase-title">
+                    <h3>架构设计阶段</h3>
+                    <div class="role">角色：首席安全架构师 · 15年+ 企业级安全产品架构经验</div>
+                </div>
+            </div>
+            <div class="phase-grid">
+                <div class="phase-section">
+                    <h4><span class="icon">[+]</span> 技术约束</h4>
+                    <ul>
+                        <li>Rust 1.75+ / Axum 0.7+ / SQLx 0.7+</li>
+                        <li>React 18 / TypeScript 5+ / Vite 5+</li>
+                        <li>PostgreSQL 15+ / Redis 7.2+</li>
+                        <li>模块隔离 · TLS 1.2+ · 无状态设计</li>
+                        <li>OpenTelemetry 全链路追踪</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[*]</span> 功能清单</h4>
+                    <ul>
+                        <li>Cargo Workspace 6 crate 目录结构</li>
+                        <li>React Monorepo 5 package 结构</li>
+                        <li>五张核心表 ERD 设计（DDL）</li>
+                        <li>OpenAPI 3.0 完整 API 契约</li>
+                        <li>安全架构（JWT / RBAC / 限流）</li>
+                        <li>扫描引擎架构 + 插件系统设计</li>
+                        <li>Rust Trait 接口规范定义</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[#]</span> 代码规范</h4>
+                    <ul>
+                        <li>文档：Markdown + Mermaid 图表</li>
+                        <li>ERD：Mermaid erDiagram 语法</li>
+                        <li>API：OpenAPI 3.0 YAML 格式</li>
+                        <li>命名：Rust snake_case / TS camelCase</li>
+                        <li>ADR 架构决策记录</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h4>交付物清单</h4>
+                <div class="deliverables-grid">
+                    <div class="deliverable-item"><span class="check">[v]</span> project-structure.md</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> database-erd.md</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> openapi.yaml</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> security-design.md</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> scanner-architecture.md</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> trait-definitions.md</div>
+                </div>
+            </div>
+            <a href="computer://c:\Users\A2681\Desktop\Rust+Recat\prompts\phase1-architecture-design.md" class="prompt-link">
+                查看完整提示词 →
+            </a>
+        </div>
+
+        <!-- PHASE 2 -->
+        <div class="phase-card" data-phase="2">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div class="phase-title">
+                    <h3>后端 API 开发阶段</h3>
+                    <div class="role">角色：高级 Rust 后端工程师 · 10年+ Rust 后端开发经验</div>
+                </div>
+            </div>
+            <div class="phase-grid">
+                <div class="phase-section">
+                    <h4><span class="icon">[+]</span> 技术约束</h4>
+                    <ul>
+                        <li>Axum 0.7+ / tokio 1.35+ / SQLx 0.7+</li>
+                        <li>jsonwebtoken 9.2+ / argon2 0.5+</li>
+                        <li>禁止 unwrap/expect/panic</li>
+                        <li>Clippy 零警告 · <code>Send + Sync</code></li>
+                        <li>SQLx 编译期 SQL 校验</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[*]</span> 功能清单</h4>
+                    <ul>
+                        <li>认证授权（JWT + RBAC + 刷新）</li>
+                        <li>用户管理（CRUD + 角色 + 锁定）</li>
+                        <li>目标管理（CRUD + 批量导入 + CIDR）</li>
+                        <li>任务管理（调度 + 暂停/恢复 + SSE）</li>
+                        <li>漏洞管理（筛选 + 状态 + 导出）</li>
+                        <li>报告管理（生成 + 预览 + 下载）</li>
+                        <li>规则管理 + 仪表盘统计</li>
+                        <li>安全中间件（限流/CORS/审计）</li>
+                        <li>Redis Pub/Sub 消息队列通信</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[#]</span> 代码规范</h4>
+                    <ul>
+                        <li>函数 ≤ 50行 · 文件 ≤ 500行</li>
+                        <li><code>#[instrument]</code> tracing span</li>
+                        <li>JSON 结构化日志 · 敏感信息脱敏</li>
+                        <li>测试覆盖率 ≥ 70%（核心 ≥ 80%）</li>
+                        <li>Repository 模式 · <code>validator</code> 校验</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h4>交付物清单</h4>
+                <div class="deliverables-grid">
+                    <div class="deliverable-item"><span class="check">[v]</span> Cargo.toml (workspace + crate)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> main.rs + state.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> config/ 模块</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> error/ AppError</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> middleware/ (6个)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> routes/ + handlers/</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> models/ + services/</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> mq/ 消息队列</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> migrations/ (V1-V6)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> tests/ 集成测试</div>
+                </div>
+            </div>
+            <a href="computer://c:\Users\A2681\Desktop\Rust+Recat\prompts\phase2-backend-api-development.md" class="prompt-link">
+                查看完整提示词 →
+            </a>
+        </div>
+
+        <!-- PHASE 3 -->
+        <div class="phase-card" data-phase="3">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div class="phase-title">
+                    <h3>扫描引擎实现阶段</h3>
+                    <div class="role">角色：高级安全系统工程师 · 10年+ Rust 系统编程 + Web 安全双重背景</div>
+                </div>
+            </div>
+            <div class="phase-grid">
+                <div class="phase-section">
+                    <h4><span class="icon">[+]</span> 技术约束</h4>
+                    <ul>
+                        <li>tokio 1.35+ / reqwest 0.11+ / scraper 0.18+</li>
+                        <li>100+ 目标并发 · 单目标 ≤ 10 req/s</li>
+                        <li>内存 ≤ 512MB · 连接超时 5s / 读取 10s</li>
+                        <li>重试 3 次 · 指数退避（1s~30s）</li>
+                        <li>"只检测不利用" · 审计日志全覆盖</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[*]</span> 功能清单</h4>
+                    <ul>
+                        <li><strong>ScannerError</strong>：完整错误枚举 + 错误链</li>
+                        <li><strong>HttpClient</strong>：代理/超时/重试/审计</li>
+                        <li><strong>TargetManager</strong>：解析/CIDR展开/去重/可达性</li>
+                        <li><strong>ScannerEngine</strong>：Semaphore并发/令牌桶限流/进度</li>
+                        <li><strong>SqlInjectionDetector</strong>：错误型+时间盲注+50向量</li>
+                        <li><strong>XssDetector</strong>：反射型+30载荷+编码绕过</li>
+                        <li><strong>SensitiveFileDetector</strong>：100+路径字典</li>
+                        <li><strong>PortScanner</strong>：TCP Connect/SYN + 服务识别</li>
+                        <li><strong>ResultCollector</strong>：CVSS 3.1 + 智能去重 + 导出</li>
+                        <li><strong>Worker</strong>：Redis消费/心跳/优雅停机</li>
+                        <li><strong>Plugin System</strong>：热加载 + <code>notify</code> 监听</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[#]</span> 代码规范</h4>
+                    <ul>
+                        <li>函数 ≤ 60行 · <code>Arc</code> 共享资源</li>
+                        <li><code>#[async_trait]</code> + <code>#[instrument]</code></li>
+                        <li>审计日志单独输出 audit.log</li>
+                        <li>覆盖率 ≥ 70% · <code>wiremock</code> Mock</li>
+                        <li>Prometheus 指标暴露 :9090/metrics</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h4>交付物清单</h4>
+                <div class="deliverables-grid">
+                    <div class="deliverable-item"><span class="check">[v]</span> Cargo.toml</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> error.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> http_client.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> target/ (6模块)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> engine/ (6模块)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> detectors/ (5文件)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> result/ (4模块)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> worker/ (4模块)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> YAML规则文件 (3个)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> tests/ 集成测试</div>
+                </div>
+            </div>
+            <a href="computer://c:\Users\A2681\Desktop\Rust+Recat\prompts\phase3-scan-engine-implementation.md" class="prompt-link">
+                查看完整提示词 →
+            </a>
+        </div>
+
+        <!-- PHASE 4 -->
+        <div class="phase-card" data-phase="4">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div class="phase-title">
+                    <h3>前端界面开发阶段</h3>
+                    <div class="role">角色：高级前端架构师 · 8年+ React 前端架构经验</div>
+                </div>
+            </div>
+            <div class="phase-grid">
+                <div class="phase-section">
+                    <h4><span class="icon">[+]</span> 技术约束</h4>
+                    <ul>
+                        <li>React 18 / TS 5.3+ / Vite 5.1+</li>
+                        <li>Ant Design 5.14+ / ProComponents</li>
+                        <li>React-Query 5.20+ / Zustand 4.5+</li>
+                        <li>React Router 6.22+ / Axios 1.6+</li>
+                        <li>ECharts 5.5+ / pnpm workspaces</li>
+                        <li>FCP < 1.5s · LCP < 3s · 主包 < 300KB</li>
+                        <li>WCAG 2.1 AA · 自定义媒体查询断点</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[*]</span> 功能清单</h4>
+                    <ul>
+                        <li><strong>仪表盘</strong>：指标卡片 + 趋势折线 + 饼图 + 柱状图</li>
+                        <li><strong>目标管理</strong>：列表 + 批量导入 + 表单验证</li>
+                        <li><strong>任务中心</strong>：列表 + SSE进度 + 三步向导</li>
+                        <li><strong>漏洞库</strong>：多条件筛选 + 详情 + 状态处理</li>
+                        <li><strong>报告生成</strong>：3模板 + PDF/HTML + 预览</li>
+                        <li>路由守卫（Auth + Permission）</li>
+                        <li>Axios 封装（401/403/429处理 + 取消）</li>
+                        <li>Zustand stores（auth/theme/ui/permission）</li>
+                        <li>React-Query hooks（全模块封装）</li>
+                        <li>亮/暗主题切换 + 响应式布局</li>
+                        <li>共享组件库（8个组件）</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[#]</span> 代码规范</h4>
+                    <ul>
+                        <li>文件 ≤ 300行 · 函数 ≤ 50行</li>
+                        <li>PascalCase 组件 / camelCase 工具</li>
+                        <li>ESLint + Prettier 零警告</li>
+                        <li>CSS Grid + Flexbox · 移动端优先</li>
+                        <li>语义化 HTML · ARIA · 键盘导航</li>
+                        <li>React.lazy 懒加载 + Suspense</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h4>交付物清单</h4>
+                <div class="deliverables-grid">
+                    <div class="deliverable-item"><span class="check">[v]</span> pnpm-workspace + 配置</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> shared-types (10文件)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> router/ 路由+守卫</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> MainLayout</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> services/ (8服务)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> store/ (4 stores)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> hooks/ (6 hooks)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> pages/ (5模块)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> shared-ui (8组件)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> styles/ 样式文件</div>
+                </div>
+            </div>
+            <a href="computer://c:\Users\A2681\Desktop\Rust+Recat\prompts\phase4-frontend-development.md" class="prompt-link">
+                查看完整提示词 →
+            </a>
+        </div>
+
+        <!-- PHASE 5 -->
+        <div class="phase-card" data-phase="5">
+            <div class="phase-header">
+                <div class="phase-number">5</div>
+                <div class="phase-title">
+                    <h3>系统联调优化阶段</h3>
+                    <div class="role">角色：高级性能优化工程师 · 12年+ 系统性能优化与 DevOps 经验</div>
+                </div>
+            </div>
+            <div class="phase-grid">
+                <div class="phase-section">
+                    <h4><span class="icon">[+]</span> 技术约束</h4>
+                    <ul>
+                        <li>criterion 0.5+ · 基准测试</li>
+                        <li>Wappalyzer 指纹识别 · governor 限流</li>
+                        <li>OpenTelemetry + Jaeger 分布式追踪</li>
+                        <li>跨平台：Windows / Linux / macOS</li>
+                        <li>兼容现有系统 · Clippy 零警告</li>
+                        <li>覆盖率 ≥ 80%</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[*]</span> 功能清单</h4>
+                    <ul>
+                        <li><strong>并发优化</strong>：Semaphore 动态调整 + RAII + 死锁预防</li>
+                        <li><strong>超时机制</strong>：双重超时 + 指数退避重试</li>
+                        <li><strong>内存优化</strong>：Stream 流式处理 + 磁盘缓存 + Arc共享</li>
+                        <li><strong>误报过滤</strong>：二次确认 + 误报特征库</li>
+                        <li><strong>指纹识别</strong>：Wappalyzer + 动态规则选择</li>
+                        <li><strong>基准测试</strong>：criterion 8+ bench 文件</li>
+                        <li><strong>联调方案</strong>：E2E检查清单</li>
+                        <li><strong>Docker部署</strong>：多阶段构建 + Compose</li>
+                        <li><strong>监控</strong>：Prometheus + Grafana 仪表盘</li>
+                    </ul>
+                </div>
+                <div class="phase-section">
+                    <h4><span class="icon">[#]</span> 代码规范</h4>
+                    <ul>
+                        <li>benchmark 分组命名规范</li>
+                        <li><code>black_box</code> 防止优化消除</li>
+                        <li>优化前后 <code>// BEFORE</code> / <code>// AFTER</code> 对比</li>
+                        <li>性能退化 > 10% CI 失败</li>
+                        <li>OpenTelemetry span 属性规范</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h4>交付物清单</h4>
+                <div class="deliverables-grid">
+                    <div class="deliverable-item"><span class="check">[v]</span> concurrency.rs 优化</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> http_client.rs 优化</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> stream.rs + disk_cache.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> false_positive.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> fingerprint.rs</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> benches/ (8+ 文件)</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> optimization-report.md</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> Dockerfile x3</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> docker-compose x2</div>
+                    <div class="deliverable-item"><span class="check">[v]</span> Grafana 仪表盘 x3</div>
+                </div>
+            </div>
+            <a href="computer://c:\Users\A2681\Desktop\Rust+Recat\prompts\phase5-integration-optimization.md" class="prompt-link">
+                查看完整提示词 →
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- PERFORMANCE TARGETS -->
+<section style="padding-top: 0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>优化目标（阶段五）</h2>
+            <p>性能优化前后对比 — 基准测试验证</p>
+        </div>
+        <div class="arch-diagram">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-light);">
+                        <th style="text-align: left; padding: 12px; color: var(--text-secondary);">性能指标</th>
+                        <th style="text-align: center; padding: 12px; color: var(--accent-red);">优化前</th>
+                        <th style="text-align: center; padding: 12px; color: var(--accent-green);">优化后目标</th>
+                        <th style="text-align: center; padding: 12px; color: var(--text-muted);">测量方法</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">100 目标扫描耗时</td>
+                        <td style="text-align: center; padding: 12px;">15-20 min</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">5-8 min</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">cargo bench</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">峰值内存占用</td>
+                        <td style="text-align: center; padding: 12px;">800MB+</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">&le; 512MB</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">sysinfo</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">并发请求吞吐量</td>
+                        <td style="text-align: center; padding: 12px;">30-40 req/s</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">80-100 req/s</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">criterion</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">HTTP 请求平均延迟</td>
+                        <td style="text-align: center; padding: 12px;">200-300ms</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">80-120ms</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">Prometheus</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">误报率</td>
+                        <td style="text-align: center; padding: 12px;">15-20%</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">&le; 5%</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">E2E 测试</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;">前端首屏加载</td>
+                        <td style="text-align: center; padding: 12px;">4-5s</td>
+                        <td style="text-align: center; padding: 12px; color: var(--accent-green); font-weight: 600;">&lt; 3s</td>
+                        <td style="text-align: center; padding: 12px; color: var(--text-muted);">Lighthouse</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>Web 漏洞扫描平台 — 五阶段开发规划文档</p>
+    <p style="margin-top: 8px;">Rust + React · 生产级 AI 提示词设计 · 2026</p>
+</footer>
+
+</body>
+</html>

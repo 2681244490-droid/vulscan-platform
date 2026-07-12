@@ -1,0 +1,201 @@
+{
+  "fingerprint": {
+    "content_length": 482,
+    "cookies": [],
+    "hsts_enabled": false,
+    "meta_generator": null,
+    "page_title": "古代建筑成就数字平台",
+    "powered_by": null,
+    "response_headers": [
+      [
+        "server",
+        "nginx/1.18.0 (Ubuntu)"
+      ],
+      [
+        "date",
+        "Fri, 10 Jul 2026 15:42:03 GMT"
+      ],
+      [
+        "content-type",
+        "text/html"
+      ],
+      [
+        "content-length",
+        "482"
+      ],
+      [
+        "last-modified",
+        "Wed, 20 May 2026 12:24:24 GMT"
+      ],
+      [
+        "connection",
+        "keep-alive"
+      ],
+      [
+        "etag",
+        "\"6a0da7f8-1e2\""
+      ],
+      [
+        "accept-ranges",
+        "bytes"
+      ]
+    ],
+    "server": "nginx/1.18.0 (Ubuntu)",
+    "status_code": 200,
+    "technologies": [
+      "Server: nginx/1.18.0 (Ubuntu)"
+    ],
+    "tls_enabled": true
+  },
+  "scan_info": {
+    "detectors_used": 10,
+    "scan_duration_secs": 28.38056,
+    "scan_time": "2026-07-10T07:42:31.557929800+00:00",
+    "scanner_version": "0.2.0",
+    "target": "ljblib.xyz"
+  },
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "low": 5,
+    "medium": 4,
+    "risk_level": "中",
+    "total": 9
+  },
+  "vulnerabilities": [
+    {
+      "description": "响应中缺少 Strict-Transport-Security 头部。缺少该头部可能导致: HSTS强制HTTPS连接，防止SSL剥离攻击",
+      "detector": "安全头部",
+      "id": "314ba955",
+      "owasp_category": "A05:2021-Security Misconfiguration",
+      "remediation": "在HTTPS响应中添加: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
+      "risk_score": 5.5,
+      "severity": "中危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 Strict-Transport-Security。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588649800+00:00",
+      "title": "缺少安全响应头: Strict-Transport-Security",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 Strict-Transport-Security"
+    },
+    {
+      "description": "已启用HTTPS但未配置HSTS头部，用户首次访问或手动输入HTTP URL时可能遭受SSL剥离攻击。",
+      "detector": "加密传输",
+      "id": "d010070e",
+      "owasp_category": "A05:2021-Security Misconfiguration",
+      "remediation": "添加响应头: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
+      "risk_score": 5.5,
+      "severity": "中危",
+      "technical_analysis": "HSTS（HTTP Strict Transport Security）通过响应头告知浏览器始终使用HTTPS连接。缺少HSTS时，中间人可在首次访问时降级为HTTP。",
+      "timestamp": "2026-07-10T07:42:31.317928400+00:00",
+      "title": "缺少HSTS头部",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I确认HSTS头部存在。在ssllabs.com检查HSTS状态。"
+    },
+    {
+      "description": "响应中缺少 Content-Security-Policy 头部。缺少该头部可能导致: CSP限制资源加载来源，防止XSS和数据注入",
+      "detector": "安全头部",
+      "id": "1df9bb42",
+      "owasp_category": "A05:2021-Security Misconfiguration",
+      "remediation": "配置CSP: Content-Security-Policy: default-src 'self'; script-src 'self'",
+      "risk_score": 5.0,
+      "severity": "中危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 Content-Security-Policy。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588661200+00:00",
+      "title": "缺少安全响应头: Content-Security-Policy",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 Content-Security-Policy"
+    },
+    {
+      "description": "响应中缺少 X-Frame-Options 头部。缺少该头部可能导致: 防止页面被iframe嵌入，避免点击劫持",
+      "detector": "安全头部",
+      "id": "8b7ffcf9",
+      "owasp_category": "A05:2021-Security Misconfiguration",
+      "remediation": "添加: X-Frame-Options: DENY（或SAMEORIGIN）",
+      "risk_score": 5.0,
+      "severity": "中危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 X-Frame-Options。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588666800+00:00",
+      "title": "缺少安全响应头: X-Frame-Options",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 X-Frame-Options"
+    },
+    {
+      "description": "响应中缺少 X-Content-Type-Options 头部。缺少该头部可能导致: 防止浏览器MIME类型嗅探",
+      "detector": "安全头部",
+      "id": "343232f2",
+      "owasp_category": "A04:2021-Insecure Design",
+      "remediation": "添加: X-Content-Type-Options: nosniff",
+      "risk_score": 3.5,
+      "severity": "低危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 X-Content-Type-Options。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588673100+00:00",
+      "title": "缺少安全响应头: X-Content-Type-Options",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 X-Content-Type-Options"
+    },
+    {
+      "description": "响应中缺少 X-XSS-Protection 头部。缺少该头部可能导致: 启用浏览器内置XSS过滤器",
+      "detector": "安全头部",
+      "id": "c7435652",
+      "owasp_category": "A04:2021-Insecure Design",
+      "remediation": "添加: X-XSS-Protection: 1; mode=block",
+      "risk_score": 3.0,
+      "severity": "低危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 X-XSS-Protection。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588681300+00:00",
+      "title": "缺少安全响应头: X-XSS-Protection",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 X-XSS-Protection"
+    },
+    {
+      "description": "Server头部暴露了详细的服务器版本信息（nginx/1.18.0 (Ubuntu)），攻击者可针对已知漏洞进行利用。",
+      "detector": "信息泄露",
+      "id": "158479d6",
+      "owasp_category": "A04:2021-Insecure Design",
+      "remediation": "1. 配置server_tokens off（Nginx）或ServerTokens Prod（Apache）；\n2. 移除版本号信息。",
+      "risk_score": 3.0,
+      "severity": "低危",
+      "status_code": 200,
+      "technical_analysis": "服务器响应头中包含详细版本号，攻击者可通过版本信息查找对应的已知漏洞和利用代码。",
+      "timestamp": "2026-07-10T07:42:31.317932400+00:00",
+      "title": "服务器版本信息暴露: nginx/1.18.0 (Ubuntu)",
+      "url": "https://ljblib.xyz",
+      "verification": "确认Server头部不再包含版本号。"
+    },
+    {
+      "description": "响应中缺少 Referrer-Policy 头部。缺少该头部可能导致: 控制Referer头部信息泄露",
+      "detector": "安全头部",
+      "id": "8962ebf8",
+      "owasp_category": "A04:2021-Insecure Design",
+      "remediation": "添加: Referrer-Policy: strict-origin-when-cross-origin",
+      "risk_score": 2.5,
+      "severity": "低危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 Referrer-Policy。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588692700+00:00",
+      "title": "缺少安全响应头: Referrer-Policy",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 Referrer-Policy"
+    },
+    {
+      "description": "响应中缺少 Permissions-Policy 头部。缺少该头部可能导致: 限制浏览器API访问权限",
+      "detector": "安全头部",
+      "id": "18902188",
+      "owasp_category": "A04:2021-Insecure Design",
+      "remediation": "添加: Permissions-Policy: geolocation=(), microphone=(), camera=()",
+      "risk_score": 2.5,
+      "severity": "低危",
+      "status_code": 200,
+      "technical_analysis": "HTTP响应头中未包含 Permissions-Policy。该头部是OWASP推荐的安全头部之一，缺失会增加相应攻击向量的风险。",
+      "timestamp": "2026-07-10T07:42:19.588700900+00:00",
+      "title": "缺少安全响应头: Permissions-Policy",
+      "url": "https://ljblib.xyz",
+      "verification": "使用curl -I https://ljblib.xyz 检查响应头是否包含 Permissions-Policy"
+    }
+  ]
+}

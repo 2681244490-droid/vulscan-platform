@@ -1,0 +1,46 @@
+[workspace]
+members = [
+    "backend/web-api",
+    "backend/task-scheduler",
+    "backend/shared-lib",
+    "backend/scanner-engine",
+    "backend/plugin-system",
+    "backend/db-migrations",
+    "backend/auth-service",
+]
+
+[workspace.package]
+name = "vulscan"
+version = "0.1.0"
+edition = "2021"
+authors = ["Security Team <security@example.com>"]
+description = "Enterprise Web Vulnerability Scanning Platform"
+license = "MIT"
+
+[workspace.dependencies]
+actix-web = "4.5"
+actix-identity = "0.4"
+actix-cors = "0.7"
+anyhow = "1.0"
+async-stream = "0.3"
+bcrypt = "0.15"
+chrono = { version = "0.4", features = ["serde"] }
+config = "0.14"
+derive_more = "0.99"
+futures = "0.3"
+jsonwebtoken = "9"
+prometheus = "0.13"
+redis = "0.24"
+regex = "1.10"
+reqwest = { version = "0.12", features = ["json", "native-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-native-tls", "chrono", "json"] }
+thiserror = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+tracing = "0.1"
+tracing-actix-web = "0.7"
+tracing-subscriber = "0.3"
+url = { version = "2.5", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+validator = "0.18"
